@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Auto Guitar Tuner | Ritvik Patnala</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Auto Guitar Tuner project by Ritvik Patnala – embedded DSP, ESP32-S3, servo control, and custom PCB design." />
+  <style>
+    /* --- Basic styling just for this page --- */
+    :root {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --max-width: 860px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #020617 0, #000 60%);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 28px 16px 56px;
+    }
+
+    header {
+      margin-bottom: 24px;
+      padding: 18px 18px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: radial-gradient(circle at top left, var(--accent-soft), #020617 60%);
+    }
+
+    .breadcrumb {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .breadcrumb a {
+      color: var(--muted);
+    }
+
+    .breadcrumb a:hover {
+      color: var(--accent);
+    }
+
+    .title-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      letter-spacing: 0.03em;
+    }
+
+    .meta {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .tagline {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-top: 6px;
+      max-width: 650px;
+    }
+
+    .tags {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.9);
+      color: #cbd5f5;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    section {
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.9);
+      padding: 16px 14px 14px;
+    }
+
+    section h2 {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    p {
+      font-size: 0.92rem;
+      margin-bottom: 6px;
+    }
+
+    ul {
+      margin-left: 16px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+
+    li {
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85rem;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 1px 4px;
+      border-radius: 4px;
+      border: 1px solid #1f2937;
+    }
+
+    .media-placeholder {
+      margin-top: 8px;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+      font-size: 0.85rem;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .link-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+      font-size: 0.9rem;
+    }
+
+    .pill-link {
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: var(--accent-soft);
+      color: #e0f2fe;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .pill-link:hover {
+      text-decoration: none;
+      filter: brightness(1.05);
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      h1 {
+        font-size: 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="breadcrumb">
+        <a href="../index.html">← Back to portfolio</a>
+      </div>
+      <div class="title-row">
+        <h1>Auto Guitar Tuner</h1>
+        <div class="meta">Aug 2025 – Present · Personal Project</div>
+      </div>
+      <p class="tagline">
+        A handheld tuner that listens to a plucked guitar string, estimates its pitch on-board,
+        and automatically adjusts the tuning peg via a servo motor to reach the desired note within ±12 cents.
+      </p>
+      <div class="tags">
+        <span class="tag">ESP32-S3</span>
+        <span class="tag">Embedded DSP</span>
+        <span class="tag">Autocorrelation</span>
+        <span class="tag">Servo Control</span>
+        <span class="tag">PCB Design (KiCad)</span>
+        <span class="tag">USB-C Power</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- Overview -->
+      <section id="overview">
+        <h2>Overview</h2>
+        <p>
+          The goal of this project is to build an <strong>automatic guitar tuner</strong> that can
+          detect the pitch of a plucked string and physically turn the guitar’s tuning peg to bring
+          the string into tune without the user needing to interpret a tuner display.
+        </p>
+        <p>
+          The device includes:
+        </p>
+        <ul>
+          <li>An <strong>audio front-end</strong> (microphone + amplifier + anti-alias filter) feeding an ADC pin on an ESP32-S3.</li>
+          <li>An <strong>embedded DSP pipeline</strong> (DC removal, windowing, autocorrelation) to estimate the fundamental frequency.</li>
+          <li>A <strong>servo motor</strong> mechanically coupled to the tuning peg that turns in small increments based on tuning error.</li>
+          <li>An <strong>OLED display</strong> showing the current note, tuning error in cents, and battery status.</li>
+          <li>A <strong>USB-C rechargeable power subsystem</strong> for portability.</li>
+        </ul>
+        <div class="media-placeholder">
+          [Placeholder] Insert a photo of the assembled prototype here (front view of the tuner on a guitar headstock).
+        </div>
+      </section>
+
+      <!-- Hardware Design -->
+      <section id="hardware">
+        <h2>Hardware Design</h2>
+        <p>
+          The hardware is built around an <strong>ESP32-S3-WROOM</strong> module on a custom PCB designed in KiCad.
+          The board connects the microcontroller to the microphone, amplifier, servo header, OLED, and power circuitry.
+        </p>
+        <ul>
+          <li><strong>Audio input:</strong> electret or piezo microphone → preamp (e.g., SSM2167 / LM386) → anti-aliasing low-pass filter → ADC pin.</li>
+          <li><strong>Display:</strong> 2.4&quot; OLED connected over I²C (SCL/SDA lines with appropriate pull-ups).</li>
+          <li><strong>Servo interface:</strong> 3-pin header (GND, +5V, PWM) driven from a timer-capable GPIO.</li>
+          <li><strong>Power:</strong> USB-C input → Li-ion charging IC → battery → buck/linear regulator for 3.3V logic and 5V rail for the servo.</li>
+        </ul>
+        <div class="media-placeholder">
+          [Placeholder] Insert a PCB layout screenshot and a simple block diagram:
+          Guitar string → Microphone → Amplifier → ADC (ESP32) → DSP → Servo → Tuning Peg.
+        </div>
+      </section>
+
+      <!-- Firmware & DSP Pipeline -->
+      <section id="firmware">
+        <h2>Firmware & DSP Pipeline</h2>
+        <p>
+          The firmware runs on the ESP32-S3 and is responsible for sampling audio, estimating pitch,
+          and computing how far the note is from the target tuning in cents.
+        </p>
+        <p>The main steps are:</p>
+        <ul>
+          <li><strong>Sampling:</strong> Configure an ADC channel and sample the audio signal at a fixed sampling rate (e.g., 8–16 kHz).</li>
+          <li><strong>Pre-processing:</strong> Remove DC offset and optionally apply a window (e.g., Hanning) to the buffer.</li>
+          <li><strong>Pitch detection:</strong> Compute the <strong>autocorrelation</strong> of the buffer and find the lag corresponding to the fundamental period.</li>
+          <li><strong>Frequency & note:</strong> Convert the period to frequency, then map it to the closest musical note and compute the cent error.</li>
+          <li><strong>Control:</strong> Use the cent error to decide how long and in which direction to drive the servo.</li>
+        </ul>
+        <p>
+          In pseudocode, the DSP loop looks like:
+        </p>
+        <pre><code>// Pseudocode (not exact C)
+while (true) {
+    capture_audio_buffer(buf);
+    remove_dc(buf);
+    pitch_hz = estimate_pitch_autocorr(buf, sample_rate);
+    note, cents_error = map_frequency_to_note(pitch_hz);
+
+    update_oled(note, cents_error);
+    update_servo(cents_error);
+}</code></pre>
+        <div class="media-placeholder">
+          [Placeholder] Insert a graph showing the waveform of a plucked string and its autocorrelation,
+          with the fundamental period marked.
+        </div>
+      </section>
+
+      <!-- Mechanical / Servo Control -->
+      <section id="servo">
+        <h2>Mechanical & Servo Control</h2>
+        <p>
+          The tuning peg is turned by a <strong>standard hobby servo</strong>, which is mechanically coupled
+          to the guitar’s tuning peg using a custom adapter (3D-printed or off-the-shelf coupler).
+        </p>
+        <ul>
+          <li>The servo receives a PWM signal from the ESP32-S3 (typically 50 Hz, 1–2 ms pulse width).</li>
+          <li>The firmware defines a mapping from cent error → small angular step (+/-) to avoid overshooting.</li>
+          <li>After each adjustment, the string is re-sampled and evaluated again until the error is within ±12 cents.</li>
+        </ul>
+        <div class="media-placeholder">
+          [Placeholder] Insert a short video / GIF of the servo turning the peg while the string is being tuned.
+        </div>
+      </section>
+
+      <!-- Testing & Results -->
+      <section id="testing">
+        <h2>Testing & Results</h2>
+        <p>
+          To validate the system, I tested all six strings (E–A–D–G–B–E) from intentionally detuned states and
+          measured how quickly and how accurately the tuner could correct them.
+        </p>
+        <ul>
+          <li>Most strings converged to within ±12 cents in approximately 10–20 seconds.</li>
+          <li>Performance depends on initial detuning, string gauge, and mechanical friction in the tuner.</li>
+          <li>Autocorrelation-based pitch detection was robust to noise compared to naive zero-crossing methods.</li>
+        </ul>
+        <div class="media-placeholder">
+          [Placeholder] Insert a small table or plot:
+          initial detune (cents) vs. final error (cents) vs. time taken (s).
+        </div>
+      </section>
+
+      <!-- Challenges & Lessons -->
+      <section id="challenges">
+        <h2>Challenges & Lessons Learned</h2>
+        <ul>
+          <li>
+            <strong>Noisy signals:</strong> Raw microphone data had significant noise and harmonics; proper preamp gain,
+            filtering, and windowing were important for stable pitch estimates.
+          </li>
+          <li>
+            <strong>Servo backlash & friction:</strong> Mechanical slack in the servo/peg interface meant that very small
+            corrections sometimes did not move the string; I addressed this by using a minimum step size.
+          </li>
+          <li>
+            <strong>Real-time constraints:</strong> DSP computations had to be efficient enough to run on the ESP32-S3
+            without blocking the UI or control loop.
+          </li>
+        </ul>
+      </section>
+
+      <!-- Future Work -->
+      <section id="future-work">
+        <h2>Future Work</h2>
+        <ul>
+          <li>Support alternative tunings (Drop D, open tunings) selectable from the OLED UI.</li>
+          <li>Improve mechanical coupling to reduce backlash and increase repeatability.</li>
+          <li>Experiment with alternative pitch detection algorithms (e.g., YIN, cepstrum-based methods).</li>
+          <li>Add Bluetooth connectivity to log tuning sessions or control settings from a phone app.</li>
+        </ul>
+      </section>
+
+      <!-- Links -->
+      <section id="links">
+        <h2>Links</h2>
+        <p>You can explore the code and hardware files here:</p>
+        <div class="link-row">
+          <a class="pill-link" href="https://github.com/your-github-username/auto-guitar-tuner" target="_blank" rel="noopener">
+            <strong>GitHub</strong> · Source code & PCB files
+          </a>
+          <a class="pill-link" href="https://youtu.be/your-demo-video-id" target="_blank" rel="noopener">
+            <strong>Demo</strong> · Video of the tuner in action
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Auto Guitar Tuner · A project by <a href="../index.html">Ritvik Patnala</a>
+    </footer>
+  </div>
+</body>
+</html>
